@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.option-portfolio-container {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.portfolio-header {
+  background: white;
+  padding: 16px 24px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.t-quote-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.t-quote-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.selected-count {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.t-quote-table {
+  overflow-x: auto;
+}
+
+.t-quote-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.t-quote-table th,
+.t-quote-table td {
+  padding: 8px 12px;
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  font-size: 12px;
+}
+
+.t-quote-table th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.strike-price-column {
+  background: #f9f9f9 !important;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.call-option {
+  background: #fff2e8;
+}
+
+.put-option {
+  background: #f6ffed;
+}
+
+.option-row:hover {
+  background: #e6f7ff;
+}
+
+.price-positive {
+  color: #cf1322;
+}
+
+.price-negative {
+  color: #389e0d;
+}
+
+.greek-value {
+  font-size: 11px;
+  color: #666;
+}

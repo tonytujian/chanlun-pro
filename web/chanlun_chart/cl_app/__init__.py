@@ -1477,6 +1477,209 @@ def create_app(test_config=None):
             "data": ai_analyse_records,
         }
 
+    # 期权相关API
+    @app.route("/api/options/underlyings", methods=["GET"])
+    @login_required
+    def get_option_underlyings():
+        """
+        获取期权标的物列表
+        """
+        # 这里可以从配置文件或数据库中获取支持的期权标的物
+        underlyings = [
+            {"code": "300ETF", "name": "沪深300ETF期权"},
+            {"code": "500ETF", "name": "中证500ETF期权"},
+            {"code": "1000ETF", "name": "中证1000ETF期权"},
+            {"code": "HO", "name": "沪深300股指期权"},
+            {"code": "MO", "name": "中证1000股指期权"},
+        ]
+        return {"code": 0, "data": underlyings}
+
+    @app.route("/api/options/expiry_months/<underlying>", methods=["GET"])
+    @login_required
+    def get_option_expiry_months(underlying):
+        """
+        获取指定标的物的到期月份列表
+        """
+        # 这里应该从期权合约数据中获取实际的到期月份
+        # 暂时返回模拟数据
+        import datetime
+        current_date = datetime.datetime.now()
+        expiry_months = []
+        for i in range(6):  # 未来6个月
+            month_date = current_date + datetime.timedelta(days=30*i)
+            expiry_months.append({
+                "value": month_date.strftime("%Y-%m"),
+                "label": month_date.strftime("%Y年%m月")
+            })
+        return {"code": 0, "data": expiry_months}
+
+    @app.route("/api/options/contracts/<underlying>/<expiry_month>", methods=["GET"])
+    @login_required
+    def get_option_contracts(underlying, expiry_month):
+        """
+        获取指定标的物和到期月份的期权合约列表（T型报价数据）
+        """
+        # 这里应该从数据库或交易所API获取实际的期权合约数据
+        # 暂时返回模拟数据
+        import random
+
+        # 模拟当前标的价格
+        underlying_price = 3000 + random.randint(-200, 200)
+
+        # 生成行权价列表（围绕当前价格）
+        strike_prices = []
+        base_strike = int(underlying_price / 50) * 50  # 取整到50的倍数
+        for i in range(-10, 11):  # 上下各10个行权价
+            strike_prices.append(base_strike + i * 50)
+
+        contracts = []
+        for strike in strike_prices:
+            # 看涨期权
+            call_contract = {
+                "contract_code": f"{underlying}{expiry_month.replace('-', '')}-C-{strike}",
+                "contract_name": f"{underlying}购{expiry_month.replace('-', '')}{strike}",
+                "option_type": "C",
+                "strike_price": strike,
+                "last_price": max(0.001, random.uniform(0.01, max(0.01, underlying_price - strike) / 100)),
+                "bid_price": 0,
+                "ask_price": 0,
+                "volume": random.randint(0, 1000),
+                "open_interest": random.randint(0, 5000),
+                "delta": random.uniform(0, 1),
+                "gamma": random.uniform(0, 0.01),
+                "theta": random.uniform(-0.1, 0),
+                "vega": random.uniform(0, 0.5),
+                "implied_volatility": random.uniform(0.1, 0.5)
+            }
+
+            # 看跌期权
+            put_contract = {
+                "contract_code": f"{underlying}{expiry_month.replace('-', '')}-P-{strike}",
+                "contract_name": f"{underlying}沽{expiry_month.replace('-', '')}{strike}",
+                "option_type": "P",
+                "strike_price": strike,
+                "last_price": max(0.001, random.uniform(0.01, max(0.01, strike - underlying_price) / 100)),
+                "bid_price": 0,
+                "ask_price": 0,
+                "volume": random.randint(0, 1000),
+                "open_interest": random.randint(0, 5000),
+                "delta": random.uniform(-1, 0),
+                "gamma": random.uniform(0, 0.01),
+                "theta": random.uniform(-0.1, 0),
+                "vega": random.uniform(0, 0.5),
+                "implied_volatility": random.uniform(0.1, 0.5)
+            }
+
+            contracts.append({
+                "strike_price": strike,
+                "call": call_contract,
+                "put": put_contract
+            })
+
+        return {
+            "code": 0,
+            "data": {
+                "underlying_price": underlying_price,
+                "contracts": contracts
+            }
+        }
+
+    @app.route("/api/options/portfolios", methods=["GET", "POST"])
+    @login_required
+    def option_portfolios():
+        """
+        期权组合管理
+        GET: 获取期权组合列表
+        POST: 创建新的期权组合
+        """
+        if request.method == "GET":
+            # 获取期权组合列表
+            portfolios = db.option_portfolio_list()
+            return {
+                "code": 0,
+                "data": [
+                    {
+                        "id": p.id,
+                        "portfolio_name": p.portfolio_name,
+                        "underlying_symbol": p.underlying_symbol,
+                        "underlying_name": p.underlying_name,
+                        "expiry_month": p.expiry_month,
+                        "description": p.description,
+                        "created_at": p.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        "is_active": p.is_active
+                    }
+                    for p in portfolios
+                ]
+            }
+        else:
+            # 创建新的期权组合
+            portfolio_data = {
+                "portfolio_name": request.form["portfolio_name"],
+                "underlying_symbol": request.form["underlying_symbol"],
+                "underlying_name": request.form["underlying_name"],
+                "expiry_month": request.form["expiry_month"],
+                "description": request.form.get("description", ""),
+                "created_by": "user",  # 这里应该从登录用户获取
+                "selected_contracts": json.loads(request.form["selected_contracts"])
+            }
+
+            portfolio_id = db.option_portfolio_save(portfolio_data)
+            return {"code": 0, "data": {"portfolio_id": portfolio_id}}
+
+    @app.route("/api/options/portfolios/<int:portfolio_id>", methods=["GET", "PUT", "DELETE"])
+    @login_required
+    def option_portfolio_detail(portfolio_id):
+        """
+        期权组合详情管理
+        GET: 获取组合详情
+        PUT: 更新组合
+        DELETE: 删除组合
+        """
+        if request.method == "GET":
+            portfolio = db.option_portfolio_get(portfolio_id)
+            if not portfolio:
+                return {"code": 404, "message": "组合不存在"}
+
+            portfolio_items = db.option_portfolio_items_get(portfolio_id)
+            return {
+                "code": 0,
+                "data": {
+                    "portfolio": {
+                        "id": portfolio.id,
+                        "portfolio_name": portfolio.portfolio_name,
+                        "underlying_symbol": portfolio.underlying_symbol,
+                        "underlying_name": portfolio.underlying_name,
+                        "expiry_month": portfolio.expiry_month,
+                        "description": portfolio.description,
+                        "created_at": portfolio.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                        "is_active": portfolio.is_active
+                    },
+                    "items": [
+                        {
+                            "id": item.id,
+                            "contract_code": item.contract_code,
+                            "position_type": item.position_type,
+                            "quantity": item.quantity,
+                            "entry_price": item.entry_price,
+                            "current_price": item.current_price,
+                            "pnl": item.pnl
+                        }
+                        for item in portfolio_items
+                    ]
+                }
+            }
+        elif request.method == "DELETE":
+            result = db.option_portfolio_delete(portfolio_id)
+            return {"code": 0 if result else 500}
+
+    @app.route("/options/portfolio", methods=["GET"])
+    @login_required
+    def option_portfolio_page():
+        """
+        期权组合配置页面
+        """
+        return render_template("option_portfolio.html")
+
     @app.route("/a/bkgn_list", methods=["GET"])
     @login_required
     def a_bkgn_list():

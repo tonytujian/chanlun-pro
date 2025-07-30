@@ -2,14 +2,18 @@ import datetime
 import json
 import time
 import warnings
+from datetime import datetime
 from typing import List, Union
 
 import numpy as np
 import pandas as pd
 from sqlalchemy import (
+    Boolean,
     Column,
+    Date,
     DateTime,
     Float,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -203,6 +207,103 @@ class TableByAIAnalyse(Base):
     model = Column(String(100), comment="分析模型")
     prompt = Column(Text, comment="缠论当下说明")
     msg = Column(Text, comment="分析结果")
+
+    # 添加配置设置编码
+    __table_args__ = {"mysql_collate": "utf8mb4_general_ci"}
+
+
+class TableByOptionPortfolio(Base):
+    # 期权组合配置表
+    __tablename__ = "cl_option_portfolio"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    portfolio_name = Column(String(100), comment="组合名称")  # 组合名称
+    underlying_symbol = Column(String(20), comment="标的代码")  # 标的代码，如300ETF
+    underlying_name = Column(String(100), comment="标的名称")  # 标的名称
+    expiry_month = Column(String(10), comment="到期月份")  # 到期月份，如2023-10
+    description = Column(Text, comment="组合描述")  # 组合描述
+    created_by = Column(String(50), comment="创建人")  # 创建人
+    created_at = Column(DateTime, default=datetime.now, comment="创建时间")  # 创建时间
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")  # 更新时间
+    is_active = Column(Boolean, default=True, comment="是否激活")  # 是否激活
+
+    # 添加配置设置编码
+    __table_args__ = {"mysql_collate": "utf8mb4_general_ci"}
+
+
+class TableByOptionContract(Base):
+    # 期权合约表
+    __tablename__ = "cl_option_contract"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contract_code = Column(String(50), comment="合约代码")  # 合约代码，如HO2301-C-2325
+    contract_name = Column(String(100), comment="合约名称")  # 合约名称
+    underlying_symbol = Column(String(20), comment="标的代码")  # 标的代码
+    underlying_name = Column(String(100), comment="标的名称")  # 标的名称
+    option_type = Column(String(10), comment="期权类型")  # 期权类型：C(看涨) P(看跌)
+    strike_price = Column(Float, comment="行权价")  # 行权价
+    expiry_date = Column(Date, comment="到期日")  # 到期日
+    expiry_month = Column(String(10), comment="到期月份")  # 到期月份，如2023-10
+    exchange = Column(String(20), comment="交易所")  # 交易所
+    multiplier = Column(Integer, default=10000, comment="合约乘数")  # 合约乘数
+
+    # 实时行情数据
+    last_price = Column(Float, comment="最新价")  # 最新价
+    bid_price = Column(Float, comment="买一价")  # 买一价
+    ask_price = Column(Float, comment="卖一价")  # 卖一价
+    bid_volume = Column(Integer, comment="买一量")  # 买一量
+    ask_volume = Column(Integer, comment="卖一量")  # 卖一量
+    volume = Column(Integer, comment="成交量")  # 成交量
+    open_interest = Column(Integer, comment="持仓量")  # 持仓量
+
+    # 希腊字母
+    delta = Column(Float, comment="Delta")  # Delta
+    gamma = Column(Float, comment="Gamma")  # Gamma
+    theta = Column(Float, comment="Theta")  # Theta
+    vega = Column(Float, comment="Vega")  # Vega
+    rho = Column(Float, comment="Rho")  # Rho
+
+    # 隐含波动率
+    implied_volatility = Column(Float, comment="隐含波动率")  # 隐含波动率
+
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")  # 更新时间
+
+    # 添加配置设置编码
+    __table_args__ = {"mysql_collate": "utf8mb4_general_ci"}
+
+
+class TableByOptionPortfolioItem(Base):
+    # 期权组合明细表
+    __tablename__ = "cl_option_portfolio_item"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    portfolio_id = Column(Integer, ForeignKey('cl_option_portfolio.id'), comment="组合ID")  # 组合ID
+    contract_id = Column(Integer, ForeignKey('cl_option_contract.id'), comment="合约ID")  # 合约ID
+    contract_code = Column(String(50), comment="合约代码")  # 合约代码
+    position_type = Column(String(10), comment="持仓方向")  # 持仓方向：long(多头) short(空头)
+    quantity = Column(Integer, comment="数量")  # 数量
+    entry_price = Column(Float, comment="建仓价格")  # 建仓价格
+    current_price = Column(Float, comment="当前价格")  # 当前价格
+    pnl = Column(Float, comment="盈亏")  # 盈亏
+    created_at = Column(DateTime, default=datetime.now, comment="创建时间")  # 创建时间
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now, comment="更新时间")  # 更新时间
+
+    # 添加配置设置编码
+    __table_args__ = {"mysql_collate": "utf8mb4_general_ci"}
+
+
+class TableByOptionTrade(Base):
+    # 期权交易记录表
+    __tablename__ = "cl_option_trade"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    portfolio_id = Column(Integer, ForeignKey('cl_option_portfolio.id'), comment="组合ID")  # 组合ID
+    contract_code = Column(String(50), comment="合约代码")  # 合约代码
+    trade_type = Column(String(20), comment="交易类型")  # 交易类型：buy_open, sell_open, buy_close, sell_close
+    quantity = Column(Integer, comment="数量")  # 数量
+    price = Column(Float, comment="成交价格")  # 成交价格
+    amount = Column(Float, comment="成交金额")  # 成交金额
+    commission = Column(Float, comment="手续费")  # 手续费
+    trade_time = Column(DateTime, comment="成交时间")  # 成交时间
+    order_id = Column(String(50), comment="订单号")  # 订单号
+    status = Column(String(20), comment="状态")  # 状态：pending, filled, cancelled, rejected
+    created_at = Column(DateTime, default=datetime.now, comment="创建时间")  # 创建时间
 
     # 添加配置设置编码
     __table_args__ = {"mysql_collate": "utf8mb4_general_ci"}
@@ -1247,6 +1348,148 @@ class DB(object):
             session.commit()
 
         return True
+
+    # 期权组合相关方法
+    def option_portfolio_list(self):
+        """获取期权组合列表"""
+        with self.Session() as session:
+            portfolios = session.query(TableByOptionPortfolio).filter(
+                TableByOptionPortfolio.is_active == True
+            ).order_by(TableByOptionPortfolio.created_at.desc()).all()
+            return portfolios
+
+    def option_portfolio_save(self, portfolio_data):
+        """保存期权组合"""
+        with self.Session() as session:
+            # 创建组合记录
+            portfolio = TableByOptionPortfolio(
+                portfolio_name=portfolio_data["portfolio_name"],
+                underlying_symbol=portfolio_data["underlying_symbol"],
+                underlying_name=portfolio_data["underlying_name"],
+                expiry_month=portfolio_data["expiry_month"],
+                description=portfolio_data["description"],
+                created_by=portfolio_data["created_by"]
+            )
+            session.add(portfolio)
+            session.flush()  # 获取portfolio.id
+
+            # 保存选中的期权合约
+            selected_contracts = portfolio_data["selected_contracts"]
+            for contract in selected_contracts:
+                # 先保存或更新期权合约信息
+                existing_contract = session.query(TableByOptionContract).filter(
+                    TableByOptionContract.contract_code == contract["contract_code"]
+                ).first()
+
+                if not existing_contract:
+                    option_contract = TableByOptionContract(
+                        contract_code=contract["contract_code"],
+                        contract_name=contract["contract_name"],
+                        underlying_symbol=portfolio_data["underlying_symbol"],
+                        underlying_name=portfolio_data["underlying_name"],
+                        option_type=contract["option_type"],
+                        strike_price=contract["strike_price"],
+                        expiry_month=portfolio_data["expiry_month"],
+                        last_price=contract.get("last_price", 0),
+                        delta=contract.get("delta", 0),
+                        gamma=contract.get("gamma", 0),
+                        theta=contract.get("theta", 0),
+                        vega=contract.get("vega", 0),
+                        implied_volatility=contract.get("implied_volatility", 0)
+                    )
+                    session.add(option_contract)
+                    session.flush()
+                    contract_id = option_contract.id
+                else:
+                    contract_id = existing_contract.id
+
+                # 保存组合明细
+                portfolio_item = TableByOptionPortfolioItem(
+                    portfolio_id=portfolio.id,
+                    contract_id=contract_id,
+                    contract_code=contract["contract_code"],
+                    position_type=contract.get("position_type", "long"),
+                    quantity=contract.get("quantity", 1),
+                    entry_price=contract.get("last_price", 0),
+                    current_price=contract.get("last_price", 0)
+                )
+                session.add(portfolio_item)
+
+            session.commit()
+            return portfolio.id
+
+    def option_portfolio_get(self, portfolio_id):
+        """获取期权组合详情"""
+        with self.Session() as session:
+            portfolio = session.query(TableByOptionPortfolio).filter(
+                TableByOptionPortfolio.id == portfolio_id
+            ).first()
+            return portfolio
+
+    def option_portfolio_items_get(self, portfolio_id):
+        """获取期权组合明细"""
+        with self.Session() as session:
+            items = session.query(TableByOptionPortfolioItem).filter(
+                TableByOptionPortfolioItem.portfolio_id == portfolio_id
+            ).all()
+            return items
+
+    def option_portfolio_delete(self, portfolio_id):
+        """删除期权组合"""
+        with self.Session() as session:
+            # 删除组合明细
+            session.query(TableByOptionPortfolioItem).filter(
+                TableByOptionPortfolioItem.portfolio_id == portfolio_id
+            ).delete()
+
+            # 删除组合
+            session.query(TableByOptionPortfolio).filter(
+                TableByOptionPortfolio.id == portfolio_id
+            ).delete()
+
+            session.commit()
+            return True
+
+    def option_contract_update_price(self, contract_code, price_data):
+        """更新期权合约价格数据"""
+        with self.Session() as session:
+            contract = session.query(TableByOptionContract).filter(
+                TableByOptionContract.contract_code == contract_code
+            ).first()
+
+            if contract:
+                contract.last_price = price_data.get("last_price", contract.last_price)
+                contract.bid_price = price_data.get("bid_price", contract.bid_price)
+                contract.ask_price = price_data.get("ask_price", contract.ask_price)
+                contract.volume = price_data.get("volume", contract.volume)
+                contract.open_interest = price_data.get("open_interest", contract.open_interest)
+                contract.delta = price_data.get("delta", contract.delta)
+                contract.gamma = price_data.get("gamma", contract.gamma)
+                contract.theta = price_data.get("theta", contract.theta)
+                contract.vega = price_data.get("vega", contract.vega)
+                contract.implied_volatility = price_data.get("implied_volatility", contract.implied_volatility)
+                session.commit()
+                return True
+            return False
+
+    def option_trade_save(self, trade_data):
+        """保存期权交易记录"""
+        with self.Session() as session:
+            trade = TableByOptionTrade(
+                portfolio_id=trade_data.get("portfolio_id"),
+                contract_code=trade_data["contract_code"],
+                trade_type=trade_data["trade_type"],
+                quantity=trade_data["quantity"],
+                price=trade_data["price"],
+                amount=trade_data["amount"],
+                commission=trade_data.get("commission", 0),
+                trade_time=trade_data.get("trade_time", datetime.now()),
+                order_id=trade_data.get("order_id", ""),
+                status=trade_data.get("status", "filled")
+            )
+            session.add(trade)
+            session.commit()
+            return trade.id
 
 
 db: DB = DB()
