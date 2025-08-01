@@ -1,0 +1,349 @@
+/* 全局样式 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Logo样式 */
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .ant-layout-sider {
+    position: fixed !important;
+    height: 100vh;
+    z-index: 999;
+  }
+  
+  .ant-layout-sider-collapsed {
+    margin-left: -200px;
+  }
+  
+  .ant-layout {
+    margin-left: 0 !important;
+  }
+  
+  .ant-layout-header {
+    padding: 0 16px !important;
+  }
+  
+  .ant-layout-content {
+    margin: 16px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .ant-layout-header h1 {
+    font-size: 16px !important;
+  }
+  
+  .ant-layout-content > div {
+    padding: 16px !important;
+  }
+}
+
+/* 图表容器样式 */
+.chart-container {
+  width: 100%;
+  height: 400px;
+  margin: 16px 0;
+}
+
+.chart-container-large {
+  width: 100%;
+  height: 600px;
+  margin: 16px 0;
+}
+
+/* 策略卡片样式 */
+.strategy-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.strategy-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+.strategy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.strategy-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.metric-item {
+  text-align: center;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 数据表格样式 */
+.data-table {
+  margin-top: 16px;
+}
+
+.data-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+.data-table .ant-table-tbody > tr:hover > td {
+  background: #e6f7ff;
+}
+
+/* 上传区域样式 */
+.upload-area {
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-area:hover {
+  border-color: #1890ff;
+  background: #f0f8ff;
+}
+
+.upload-area.dragover {
+  border-color: #1890ff;
+  background: #e6f7ff;
+}
+
+/* 进度条样式 */
+.progress-container {
+  margin: 16px 0;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  color: #666;
+}
+
+/* 形态匹配结果样式 */
+.pattern-match-item {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.pattern-match-item:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+.similarity-score {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.pattern-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.feature-item {
+  text-align: center;
+  padding: 4px;
+  background: #f9f9f9;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* 优化结果样式 */
+.optimization-result {
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.optimization-parameters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.parameter-item {
+  background: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+}
+
+.parameter-name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.parameter-value {
+  color: #1890ff;
+  font-family: monospace;
+}
+
+/* 加载动画 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* 空状态样式 */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #d9d9d9;
+}
+
+.empty-state-text {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  font-size: 14px;
+  color: #bbb;
+}
+
+/* 工具提示样式 */
+.tooltip-content {
+  max-width: 300px;
+}
+
+/* 标签样式 */
+.status-tag {
+  margin-right: 8px;
+}
+
+.profit-tag {
+  color: #52c41a;
+}
+
+.loss-tag {
+  color: #ff4d4f;
+}
+
+/* 按钮组样式 */
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .button-group .ant-btn {
+    width: 100%;
+  }
+}
+
+/* 统计卡片样式 */
+.stats-card {
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 16px;
+}
+
+.stats-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.stats-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
