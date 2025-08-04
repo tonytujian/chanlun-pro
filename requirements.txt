@@ -16,6 +16,7 @@ gevent
 tornado
 sqlalchemy
 lark-oapi
+dolphindb
 
 mytt
 matplotlib

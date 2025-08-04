@@ -36,6 +36,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_qmt import ExchangeQMT
 
             g_exchange_obj[market.value] = ExchangeQMT()
+        elif config.EXCHANGE_A == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBA
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBA()
         else:
             raise Exception(f"不支持的沪深交易所 {config.EXCHANGE_A}")
 
@@ -53,6 +57,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.HK.value)
+        elif config.EXCHANGE_HK == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBHK
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBHK()
         else:
             raise Exception(f"不支持的香港交易所 {config.EXCHANGE_HK}")
 
@@ -70,6 +78,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.FUTURES.value)
+        elif config.EXCHANGE_FUTURES == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBFutures
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBFutures()
         else:
             raise Exception(f"不支持的期货交易所 {config.EXCHANGE_FUTURES}")
     elif market == Market.NY_FUTURES:
@@ -82,6 +94,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.NY_FUTURES.value)
+        elif config.EXCHANGE_NY_FUTURES == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBNYFutures
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBNYFutures()
     elif market == Market.FX:
         # 外汇市场行情
         if config.EXCHANGE_FX == "tdx_fx":
@@ -92,6 +108,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.FX.value)
+        elif config.EXCHANGE_FX == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBFX
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBFX()
         else:
             raise Exception(f"不支持的外汇交易所 {config.EXCHANGE_FX}")
 
@@ -105,6 +125,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.CURRENCY.value)
+        elif config.EXCHANGE_CURRENCY == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBCurrency
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBCurrency()
         else:
             raise Exception(f"不支持的数字货币交易所 {config.EXCHANGE_CURRENCY}")
     elif market == Market.CURRENCY_SPOT:
@@ -117,6 +141,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.CURRENCY_SPOT.value)
+        elif config.EXCHANGE_CURRENCY_SPOT == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBCurrencySpot
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBCurrencySpot()
         else:
             raise Exception(f"不支持的数字货币交易所 {config.EXCHANGE_CURRENCY_SPOT}")
     elif market == Market.US:
@@ -141,6 +169,10 @@ def get_exchange(market: Market) -> Exchange:
             from chanlun.exchange.exchange_db import ExchangeDB
 
             g_exchange_obj[market.value] = ExchangeDB(Market.US.value)
+        elif config.EXCHANGE_US == "dolphindb":
+            from chanlun.exchange.exchange_dolphindb import ExchangeDolphinDBUS
+
+            g_exchange_obj[market.value] = ExchangeDolphinDBUS()
         else:
             raise Exception(f"不支持的美股交易所 {config.EXCHANGE_US}")
 

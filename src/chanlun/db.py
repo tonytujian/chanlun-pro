@@ -337,8 +337,16 @@ class DB(object):
                 max_overflow=20,
                 pool_timeout=10,
             )
+        elif config.DB_TYPE == "dolphindb":
+            # DolphinDB 使用专门的适配器
+            from chanlun.db_dolphindb import DolphinDB
+            self._dolphindb = DolphinDB()
+            self.engine = None  # DolphinDB不使用SQLAlchemy
+            self.Session = None
+            self.__cache_tables = {}
+            return
         else:
-            raise Exception("DB_TYPE 配置错误")
+            raise Exception("DB_TYPE 配置错误，支持的类型: sqlite, mysql, dolphindb")
 
         self.Session = sessionmaker(bind=self.engine)
 
@@ -412,6 +420,11 @@ class DB(object):
         limit: int = 5000,
         order: str = "desc",
     ) -> List:
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            return self._dolphindb.klines_query(
+                market, code, frequency, start_date, end_date, limit, order
+            )
         """
         获取k线数据
         :param market:
@@ -448,6 +461,15 @@ class DB(object):
         :param frequency:
         :return:
         """
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            last_dt = self._dolphindb.query_klines_last_datetime(market, code, frequency)
+            if last_dt is None:
+                return None
+            if market == "a":
+                return last_dt.strftime("%Y-%m-%d")
+            else:
+                return last_dt.strftime("%Y-%m-%d %H:%M:%S")
         with self.Session() as session:
             table = self.klines_tables(market, code)
             last_date = (
@@ -475,6 +497,25 @@ class DB(object):
         :param klines:
         :return:
         """
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            # 转换DataFrame为对象列表
+            kline_objects = []
+            for _, row in klines.iterrows():
+                kline = type('KLine', (), {})()
+                kline.code = code
+                kline.dt = row["date"].replace(tzinfo=None)
+                kline.f = frequency
+                kline.o = row["open"]
+                kline.c = row["close"]
+                kline.h = row["high"]
+                kline.l = row["low"]
+                kline.v = row["volume"]
+                kline.a = row.get("amount", 0)
+                if "position" in row:
+                    kline.p = row["position"]
+                kline_objects.append(kline)
+            return self._dolphindb.klines_insert(market, code, frequency, kline_objects)
         with self.Session() as session:
             table = self.klines_tables(market, code)
 
@@ -1316,6 +1357,11 @@ class DB(object):
         return True
 
     def cache_get(self, key: str):
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            value = self._dolphindb.cache_get(key)
+            return json.loads(value) if value else None
+
         with self.Session() as session:
             # 获取当前时间戳
             now = int(time.time())
@@ -1334,6 +1380,10 @@ class DB(object):
         return None
 
     def cache_set(self, key: str, val: dict, expire: int = 0):
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            return self._dolphindb.cache_set(key, json.dumps(val), expire)
+
         with self.Session() as session:
             session.query(TableByCache).filter(TableByCache.k == key).delete()
             cache = TableByCache(k=key, v=json.dumps(val), expire=expire)
@@ -1343,6 +1393,11 @@ class DB(object):
         return True
 
     def cache_del(self, key: str):
+        # DolphinDB 代理
+        if config.DB_TYPE == "dolphindb":
+            # DolphinDB删除缓存（通过设置过期时间为当前时间）
+            return self._dolphindb.cache_set(key, "", int(time.time()) - 1)
+
         with self.Session() as session:
             session.query(TableByCache).filter(TableByCache.k == key).delete()
             session.commit()
